@@ -43,6 +43,7 @@ def check_sequence_constraints(structure, constraints):
     bases = ['A', 'G', 'U', 'C']
     pairs = {'A':'U', 'G':'C', 'U':'A', 'C':'G'}
     bp = structure_to_bp(structure)
+    print(bp)
     for position in constraints.keys():
         if position in bp:
             bp_position = bp[position]
@@ -70,12 +71,19 @@ def make_random_sequence(structure, constraints=None):
         if constraints:
             if i in constraints.keys():
                 sequence[i] = constraints[i]
-        if x == '.':
-            sequence[i] = random.choice(bases)
-        elif x == '(':
-            sequence[i] = random.choice(bases)
-            close_index = bp[i]
-            sequence[close_index] = pairs[sequence[i]] 
+            elif i not in constraints.keys() and x == '.':
+                sequence[i] = random.choice(bases)
+            elif i not in constraints.keys() and x == ')':
+                sequence[i] = random.choice(bases)
+                close_index = bp[i]
+                sequence[close_index] = pairs[sequence[i]]
+        else:
+            if x == '.':
+                sequence[i] = random.choice(bases)
+            elif x == '(':
+                sequence[i] = random.choice(bases)
+                close_index = bp[i]
+                sequence[close_index] = pairs[sequence[i]]
     sequence = ''.join(sequence)
     return sequence
 
@@ -99,7 +107,10 @@ def initialize_sequences(structure, number_of_sequences, constraints=None):
     mismatch_list = []
     similarity_scores = []
     for i in range(number_of_sequences):
-        random_sequence = make_random_sequence(structure, constraints)
+        if constraints:
+            random_sequence = make_random_sequence(structure, constraints)
+        else:
+            random_sequence = make_random_sequence(structure)
         random_sequences.append(random_sequence)
         nupack_structure, mfe = nupack_analyze_sequence(random_sequence)
         nupack_structures.append(nupack_structure)
@@ -208,7 +219,10 @@ def compare_mutate_sequence(random_sequence, structure, nupack_structure, constr
     mutated_sequence = random_sequence
     if structure != nupack_structure:
         mismatch = structure_differences(structure, nupack_structure)
-        mutated_sequence = mutate_random_position(mismatch, random_sequence, structure)
+        if constraints:
+            mutated_sequence = mutate_random_position(mismatch, random_sequence, structure, constraints)
+        else:
+            mutated_sequence = mutate_random_position(mismatch, random_sequence, structure)
         mutated_nupack_structure, _ = nupack_analyze_sequence(mutated_sequence)
         mutated_mismatch = structure_differences(structure, mutated_nupack_structure)
     return mutated_mismatch, mutated_sequence
@@ -231,8 +245,12 @@ def mutate_sequence_iterate(random_sequence, structure, nupack_structure, iterat
     mismatch = structure_differences(structure, nupack_structure)
     sequences = []
     for i in range(iterations):
-        mutated_mismatch, mutated_sequence = compare_mutate_sequence(
-            random_sequence, structure, nupack_structure)
+        if constraints:
+            mutated_mismatch, mutated_sequence = compare_mutate_sequence(
+                random_sequence, structure, nupack_structure, constraints)
+        else:
+            mutated_mismatch, mutated_sequence = compare_mutate_sequence(
+                random_sequence, structure, nupack_structure)
         if len(mutated_mismatch) == 0: # Set stopping condition if structure matches
             random_sequence = mutated_sequence
             mismatch = mutated_mismatch
@@ -246,8 +264,9 @@ def mutate_sequence_iterate(random_sequence, structure, nupack_structure, iterat
             mismatch = mutated_mismatch
             nupack_structure, _ = nupack_analyze_sequence(random_sequence)
         elif len(mutated_mismatch) > len(mismatch):
+            threshold = 1 - 1 / (len(mutated_mismatch) - len(mismatch)) * 0.2
             random_number = random.random()
-            if random_number >= 0.95:
+            if random_number >= threshold:
                 random_sequence = mutated_sequence
                 mismatch = mutated_mismatch
                 nupack_structure, _ = nupack_analyze_sequence(random_sequence)
