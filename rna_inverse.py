@@ -259,17 +259,17 @@ def mutate_sequence_iterate(random_sequence, structure, nupack_structure, iterat
             random_sequence = mutated_sequence
             mismatch = mutated_mismatch
             nupack_structure, _ = nupack_analyze_sequence(random_sequence)
-        elif len(mutated_mismatch) == len(mismatch):
-            random_sequence = mutated_sequence
-            mismatch = mutated_mismatch
-            nupack_structure, _ = nupack_analyze_sequence(random_sequence)
-        elif len(mutated_mismatch) > len(mismatch):
-            threshold = 1 - 1 / (len(mutated_mismatch) - len(mismatch)) * 0.2
-            random_number = random.random()
-            if random_number >= threshold:
-                random_sequence = mutated_sequence
-                mismatch = mutated_mismatch
-                nupack_structure, _ = nupack_analyze_sequence(random_sequence)
+        # elif len(mutated_mismatch) == len(mismatch):
+        #     random_sequence = mutated_sequence
+        #     mismatch = mutated_mismatch
+        #     nupack_structure, _ = nupack_analyze_sequence(random_sequence)
+        # elif len(mutated_mismatch) > len(mismatch):
+        #     threshold = 1 - 1 / (len(mutated_mismatch) - len(mismatch)) * 0.2
+        #     random_number = random.random()
+        #     if random_number >= threshold:
+        #         random_sequence = mutated_sequence
+        #         mismatch = mutated_mismatch
+        #         nupack_structure, _ = nupack_analyze_sequence(random_sequence)
         sequences.append(random_sequence)
     result = {}    
     if len(mismatch) > 0:

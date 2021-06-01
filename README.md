@@ -43,10 +43,11 @@ constraints[8] = 'A'
 constraints = check_sequence_constraints(target_structure, 
                                          constraints)
   ```
+Please note that for wobble base-pairs, you must add them to sequence constraints. For these, make sure to add both base pairs and DO NOT use the `check_sequence_constraints` function.
 
 Next, generate the initial sequence using `initialize_sequences`:
   ```python
-_, initial_sequence = initialize_sequences(target_structure, 50)
+_, initial_sequence = initialize_sequences(target_structure, 50, constraints)
   ```
 
 Evaluate the initial sequence using Nupack:
@@ -58,9 +59,10 @@ Mutate and improve the sequence using `mutate_sequence_iterate`. The function re
 ```python
 number_iterations = 100
 result = mutate_sequence_iterate(initial_sequence, 
-                                 target_structure, 
-                                 nupack_structure, 
-                                 number_iterations)
+    target_structure, 
+    nupack_structure,
+    number_iterations,
+    constraints)
 improved_sequence = result['final_sequence']
 ```
 
